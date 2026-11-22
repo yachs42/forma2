@@ -231,6 +231,8 @@ body{background:#0b0f15}
 .human-panel label{font-size:11px;font-weight:760;display:flex;gap:8px;align-items:center;cursor:pointer}.human-panel input{accent-color:#b9e69e;margin:0}
 .human-panel span{font-size:10px;color:#a6bdcb;line-height:1.3}.human-panel button{font-size:10px;background:#273848;color:#cde9d4;border:1px solid #486074;border-radius:6px;padding:6px;cursor:pointer}
 .human-panel button:hover{background:#385069}
+.human-panel select{min-width:0;width:100%;background:#243443;border:1px solid #405566;border-radius:6px;color:#dbe8ed;padding:7px 5px;font-size:10px;outline:none}
+.human-panel select:focus-visible{border-color:#b9e69e}
 @media(max-width:840px){.human-panel{top:47px;left:10px;max-width:165px;padding:7px}.human-panel label{font-size:10px}}
 
 /* FORMA v7 — clean exterior camera switch */
@@ -256,13 +258,13 @@ body{background:#0b0f15}
       <button class="btn light" id="importBtn" title="Открыть проект JSON">Открыть</button>
       <button class="btn light" id="saveBtn" title="Скачать проект JSON">Сохранить</button>
       <div class="export-wrap" id="exportWrap">
-        <button class="btn primary" id="freecadBtn" title="Скачать настоящий файл проекта FreeCAD напрямую">FreeCAD .FCStd <span aria-hidden="true">↓</span></button>
+        <button class="btn primary" id="freecadBtn" title="Скачать STEP — геометрическая 3D-модель для FreeCAD 1.0.1 на РЕД ОС">FreeCAD · STEP <span aria-hidden="true">↓</span></button>
         <button class="btn light export-more" id="exportMore" title="Другие форматы экспорта" aria-label="Выбрать формат экспорта" aria-expanded="false">▾</button>
         <div class="export-menu" id="exportMenu" hidden>
-          <button data-export="step"><b>STEP · твёрдая 3D-модель</b><small>Рекомендуется для FreeCAD на РЕД ОС</small></button>
+          <button data-export="step"><b>STEP · 3D-модель</b><small>Открыть FreeCAD 1.0.1 → Файл → Открыть</small></button>
           <button data-export="obj"><b>OBJ · 3D-модель</b><small>Открыть прямо в FreeCAD</small></button>
           <button data-export="stl"><b>STL · 3D-модель</b><small>Альтернативный формат сетки</small></button>
-          <button data-export="macro"><b>FCMacro · CAD-объекты</b><small>Редактируемые стены и плиты через макрос</small></button>
+          <button data-export="macro"><b>Нативный .FCStd (через FreeCAD)</b><small>Макрос создаёт и сохраняет настоящий FCStd в домашней папке</small></button>
         </div>
       </div>
     </nav>
@@ -310,7 +312,7 @@ body{background:#0b0f15}
           <div class="panel-head"><div><strong>Визуализация дома</strong><span class="panel-kicker">3D · WebGL · точная глубина</span></div><div class="cam-actions"><button class="exterior-mode-btn" id="exteriorMode" aria-pressed="false" title="Вид готового дома снаружи: фасад, крыша, участок">◈ Снаружи</button><button class="icon-btn" id="cameraReset" title="Сбросить камеру">↺</button><button class="icon-btn text-mini" id="floorMode" title="Показать этажи">Оба этажа</button></div></div>
           <div class="scene-viewport"><canvas id="scene" aria-label="Интерактивный трёхмерный дом"></canvas>
             <div class="scene-top-hud"><span class="live-point"></span> АРХИТЕКТУРНАЯ МОДЕЛЬ <span class="scene-hud-rule"></span> WEBGL</div>
-            <div class="human-panel"><label title="Человек ростом 1,80 м; он находит мебель и подходит к ней по проходам"><input id="humanToggle" type="checkbox" checked> Человек · 180 см</label><span id="humanStatus">Ищет мебель в доме</span><button id="humanNext" title="Следующее действие человека">Следующее ↻</button></div>
+            <div class="human-panel"><label title="Человек ростом 1,80 м; он находит мебель и подходит к ней по проходам"><input id="humanToggle" type="checkbox" checked> Человек · 180 см</label><span id="humanStatus">Ищет мебель в доме</span><button id="humanNext" title="Следующее действие человека">Следующее ↻</button><select id="humanDestination" aria-label="Направить персонажа в комнату"><option value="">Куда направить?</option></select></div>
             <div class="scene-bottom-hud"><span class="scene-hint">Вращай дом · колесо — приблизить</span><div class="scene-camera-controls"><button id="sceneIso" class="scene-cam-btn active">3D</button><button id="sceneTop" class="scene-cam-btn">Сверху</button><span class="cam-divider"></span><button id="sceneZoomOut" class="scene-cam-btn square" title="Отдалить">−</button><button id="sceneZoomIn" class="scene-cam-btn square" title="Приблизить">+</button></div></div>
             <label class="roof-control"><input type="checkbox" id="roofToggle"> Крыша</label>
           </div>
@@ -490,7 +492,7 @@ if (!window.FormaPhysics) {
 // to load, so the page can still start from one HTML file.
 if (!window.__FORMA_APP_STARTED) {
   try {
-/* FORMA Studio v8 — ALL APPLICATION CODE IN ONE FILE.
+/* FORMA Studio v9 — ALL APPLICATION CODE IN ONE FILE.
  * No build step, package manager, Python, CDN or server is required.
  * ENGINEERING: edit/replace physics.js ONLY; app.js stays unchanged.
  * ARCHITECTURE: self-contained modules wrapped in a local JS loader.
@@ -631,6 +633,8 @@ function makeDemo() {
     {id:'o4',floor:0,kind:'window',dir:'h',x:2.75,y:0,width:1.6},
     {id:'o5',floor:0,kind:'window',dir:'h',x:7.25,y:0,width:1.5},
     {id:'o6',floor:0,kind:'window',dir:'h',x:2,y:8,width:1.4},
+    {id:'o7',floor:0,kind:'door',dir:'h',x:3.75,y:4.5,width:.9},
+    {id:'o8',floor:0,kind:'door',dir:'h',x:7.75,y:4.5,width:.9},
   ]};
 }
 
@@ -658,13 +662,13 @@ exports.makeDemo = makeDemo;
 };
 
 __modules['src/app.js']=function(exports,__require){
-const {makeDemo, getWalls, openingForWall, roomTypes, area, floorRooms, materialTypes, snap, clamp, newId} = __require('src/geometry.js');
+const {makeDemo, getWalls, openingForWall, intersectArea, roomTypes, area, floorRooms, materialTypes, snap, clamp, newId} = __require('src/geometry.js');
 const {analyze} = __require('src/physics/index.js');
 const {getRecommendations} = __require('src/tips.js');
 const {mount3D} = __require('src/renderer3d.js');
 const {roomFurniture, interiorStyles} = __require('src/interior/layout.js');
 const {createFreeCADMacro, createOBJ, createSTLBlob, downloadText, downloadBlob} = __require('src/freecad.js');
-const {createFCStd,createSTEP} = __require('src/freecadNative.js');
+const {createSTEP} = __require('src/freecadNative.js');
 const $=id=>document.getElementById(id);
 const ESC=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const nfmt=(n,d=1)=>Number(n).toLocaleString('ru-RU',{maximumFractionDigits:d});
@@ -672,6 +676,17 @@ const X0=68,Y0=58,S=54, XMAX=16.5,YMAX=10.5;
 const px=x=>X0+x*S, py=y=>Y0+y*S;
 let project;
 try{const saved=localStorage.getItem('forma-house-v1');project=saved?validateProject(JSON.parse(saved)):makeDemo();}catch{project=makeDemo();}
+// Update only the unmodified v8 demo. Custom saved plans are never altered.
+function upgradeStockDemoDoors(p){
+  if(p.rooms.length!==5||p.name!=='Скандинавский дом')return;
+  const stock=makeDemo().rooms;
+  if(!stock.every(r=>p.rooms.some(x=>x.id===r.id&&x.x===r.x&&x.y===r.y&&x.w===r.w&&x.h===r.h)))return;
+  for(const door of makeDemo().openings.filter(o=>o.id==='o7'||o.id==='o8')){
+    if(!p.openings.some(o=>o.floor===door.floor&&o.kind==='door'&&o.dir===door.dir&&
+       Math.abs(o.y-door.y)<.05&&Math.abs(o.x-door.x)<.6))p.openings.push(door);
+  }
+}
+upgradeStockDemoDoors(project);
 let activeFloor=0,tool='select',tab='checks',selectedId=null,drag=null,hoverPoint=null,viewMode='both';
 // SVG zoom is independent of the metre-based house model and all physics calculations.
 const planView={zoom:1,cx:490,cy:325};
@@ -751,6 +766,14 @@ function update(){
 }
 function syncControls(){
   $('projectName').value=project.name;
+  const destination=$('humanDestination');
+  const options=floorRooms(project,activeFloor).map(r=>
+    `<option value="${ESC(r.id)}">${ESC(roomTypes[r.type]?.label||'Комната')} · ${ESC(r.name)}</option>`).join('');
+  const current=destination.querySelectorAll('option').length;
+  if(destination.dataset.signature!==String(activeFloor)+':'+project.rooms.map(r=>r.id+':'+r.name+':'+r.type).join('|')){
+    destination.innerHTML='<option value="">Куда направить?</option>'+options;
+    destination.dataset.signature=String(activeFloor)+':'+project.rooms.map(r=>r.id+':'+r.name+':'+r.type).join('|');
+  }
   $('interiorStyle').value=project.settings.interiorStyle||'modern';
   $('interiorToggle').checked=renderer.view.showInteriors;
   $('material').value=project.settings.material;
@@ -849,7 +872,8 @@ function renderPlan(){
   }
   if(drag&&drag.kind==='draw'&&hoverPoint){
     const x=Math.min(drag.start.x,hoverPoint.x),y=Math.min(drag.start.y,hoverPoint.y),w=Math.abs(hoverPoint.x-drag.start.x),h=Math.abs(hoverPoint.y-drag.start.y);
-    html+=`<rect x="${px(x)}" y="${py(y)}" width="${w*S}" height="${h*S}" fill="#a4e5cf" fill-opacity=".4" stroke="#8ce6cc" stroke-width="3" stroke-dasharray="9 5" pointer-events="none"/>`;
+    const conflicting=roomOverlaps({floor:activeFloor,x,y,w,h});
+    html+=`<rect x="${px(x)}" y="${py(y)}" width="${w*S}" height="${h*S}" fill="${conflicting?'#ef7676':'#a4e5cf'}" fill-opacity=".4" stroke="${conflicting?'#ff7272':'#8ce6cc'}" stroke-width="3" stroke-dasharray="9 5" pointer-events="none"/>`;
     if(w>.25&&h>.25)html+=`<text x="${px(x+w/2)}" y="${py(y+h/2)}" font-size="14" text-anchor="middle" fill="#d9ffe9" font-weight="700" pointer-events="none">${nfmt(w,2)} × ${nfmt(h,2)} м</text>`;
   }
   if(drag?.kind==='move'&&drag.swapTarget){
@@ -884,10 +908,15 @@ function renderInsights(report){
     const fields={propName:'name',propType:'type',propX:'x',propY:'y',propW:'w',propH:'h'};
     for(const [key,attr] of Object.entries(fields))$(key).addEventListener('change',ev=>{
       const r=project.rooms.find(rr=>rr.id===selectedId);if(!r)return;
+      const oldGeometry={x:r.x,y:r.y,w:r.w,h:r.h};
       if(attr==='name'){r.name=ev.target.value.trim().slice(0,60)||roomTypes[r.type].label;}
       else if(attr==='type'){r.type=roomTypes[ev.target.value]?ev.target.value:'living';r.name=roomTypes[r.type].label;}
       else r[attr]=snap(Number(ev.target.value)||0);
-      r.x=clamp(r.x,0,XMAX-.5);r.y=clamp(r.y,0,YMAX-.5);r.w=clamp(r.w,.5,XMAX-r.x);r.h=clamp(r.h,.5,YMAX-r.y);update();
+      r.x=clamp(r.x,0,XMAX-.5);r.y=clamp(r.y,0,YMAX-.5);r.w=clamp(r.w,.5,XMAX-r.x);r.h=clamp(r.h,.5,YMAX-r.y);
+      if(!roomPlacementValid(r,[r.id])){
+        Object.assign(r,oldGeometry);toast('Комнаты не должны пересекаться');renderInsights(analyze(project));return;
+      }
+      update();
     });
     $('deleteRoom').addEventListener('click',()=>{project.rooms=project.rooms.filter(r=>r.id!==selectedId);selectedId=null;tab='checks';update();toast('Помещение удалено')});
     return;
@@ -925,7 +954,7 @@ function renderAll(){
 }
 function point(e){const svg=$('plan'),p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const result=p.matrixTransform(svg.getScreenCTM().inverse());return {x:clamp(snap((result.x-X0)/S),0,XMAX),y:clamp(snap((result.y-Y0)/S),0,YMAX)};}
 function chooseTool(t){tool=t;syncControls()}
-function chooseFloor(f){activeFloor=f;window.__floor=f;selectedId=null;syncControls();renderAll();}
+function chooseFloor(f){activeFloor=f;window.__floor=f;selectedId=null;renderer.setHumanFloor(f);syncControls();renderAll();}
 function findNearbyWall(pt){
   let match=null,distance=.26;
   for(const wall of getWalls(project,activeFloor)){
@@ -944,13 +973,103 @@ function addOpening(pt){
   if(conflict){toast('Слишком близко к другому проёму');return;}
   project.openings.push(newOpening);update();toast(tool==='door'?'Дверь добавлена':'Окно добавлено');
 }
+// Editor-only placement rule: rooms may share a wall, but not overlap in area.
+// Both floors are independent. The checks run before edits are committed.
+function roomOverlaps(candidate, exceptIds=[]) {
+  const excluded=new Set(exceptIds);
+  return project.rooms.some(other => !excluded.has(other.id) &&
+    other.floor===candidate.floor && intersectArea(candidate,other)>1e-7);
+}
+function roomPlacementValid(candidate, exceptIds=[]) {
+  return candidate.x>=0 && candidate.y>=0 && candidate.w>=.5 && candidate.h>=.5 &&
+    candidate.x+candidate.w<=XMAX+1e-7 && candidate.y+candidate.h<=YMAX+1e-7 &&
+    !roomOverlaps(candidate,exceptIds);
+}
+function applyRoomPlacement(room, patch) {
+  const candidate={...room,...patch};
+  if (!roomPlacementValid(candidate,[room.id])) return false;
+  Object.assign(room,patch);
+  return true;
+}
+function trySwapRooms(source,target,original){
+  // Exchange centres only if BOTH resulting rooms fit and nothing intersects.
+  const sourceCenter={x:original.x+source.w/2,y:original.y+source.h/2};
+  const targetCenter={x:target.x+target.w/2,y:target.y+target.h/2};
+  const nextSource={...source,x:clamp(snap(targetCenter.x-source.w/2),0,XMAX-source.w),y:clamp(snap(targetCenter.y-source.h/2),0,YMAX-source.h)};
+  const nextTarget={...target,x:clamp(snap(sourceCenter.x-target.w/2),0,XMAX-target.w),y:clamp(snap(sourceCenter.y-target.h/2),0,YMAX-target.h)};
+  const except=[source.id,target.id];
+  if(!roomPlacementValid(nextSource,except)||!roomPlacementValid(nextTarget,except)||intersectArea(nextSource,nextTarget)>1e-7)return false;
+  Object.assign(source,{x:nextSource.x,y:nextSource.y});
+  Object.assign(target,{x:nextTarget.x,y:nextTarget.y});
+  return true;
+}
+// An automatically placed, real door connects a new adjacent room to its neighbour.
+// We never let the actor cross walls without an opening. Disconnected rooms
+// stay disconnected until the user adds a door or physically joins them.
+function autoConnectRoom(newRoom){
+  const candidates=[];
+  for(const r of project.rooms){
+    if(r.id===newRoom.id||r.floor!==newRoom.floor)continue;
+    const x0=Math.max(r.x,newRoom.x),x1=Math.min(r.x+r.w,newRoom.x+newRoom.w);
+    const y0=Math.max(r.y,newRoom.y),y1=Math.min(r.y+r.h,newRoom.y+newRoom.h);
+    if(x1-x0>=1.4 && (Math.abs(r.y+r.h-newRoom.y)<.025||Math.abs(newRoom.y+newRoom.h-r.y)<.025))
+      candidates.push({dir:'h',c:Math.abs(r.y+r.h-newRoom.y)<.025?newRoom.y:r.y,a:x0,b:x1,length:x1-x0,other:r});
+    if(y1-y0>=1.4 && (Math.abs(r.x+r.w-newRoom.x)<.025||Math.abs(newRoom.x+newRoom.w-r.x)<.025))
+      candidates.push({dir:'v',c:Math.abs(r.x+r.w-newRoom.x)<.025?newRoom.x:r.x,a:y0,b:y1,length:y1-y0,other:r});
+  }
+  candidates.sort((a,b)=>b.length-a.length);
+  let chosen=null,score=Infinity;
+  for(const wall of candidates){
+    // If a door already joins the two rooms it is preserved and reused.
+    const doorAlready=project.openings.some(o=>o.floor===newRoom.floor&&o.kind==='door'&&o.dir===wall.dir&&
+      Math.abs((o.dir==='h'?o.y:o.x)-wall.c)<.03&&
+      (o.dir==='h'?o.x:o.y)>wall.a+.30&&(o.dir==='h'?o.x:o.y)<wall.b-.30);
+    if(doorAlready)return true;
+    const furniture=[...roomFurniture(newRoom,project),...roomFurniture(wall.other,project)];
+    for(let pos=snap(wall.a+.65);pos<=wall.b-.55;pos+=.25){
+      const nearby=project.openings.some(o=>o.floor===newRoom.floor&&o.dir===wall.dir&&
+        Math.abs((o.dir==='h'?o.y:o.x)-wall.c)<.03&&
+        Math.abs((o.dir==='h'?o.x:o.y)-pos)<1.3);
+      if(nearby)continue;
+      const zones=wall.dir==='v'?
+        [{x:wall.c-1.10,y:pos-.59,w:1.10,d:1.18},{x:wall.c,y:pos-.59,w:1.10,d:1.18}]:
+        [{x:pos-.59,y:wall.c-1.10,w:1.18,d:1.10},{x:pos-.59,y:wall.c,w:1.18,d:1.10}];
+      let cost=Math.abs(pos-(wall.a+wall.b)/2)*.07;
+      for(const f of furniture){
+        if(['rug','plant','pillow'].includes(f.kind))continue;
+        const weight=['desk','bed','fridge','tv','stove','sink'].includes(f.kind)?22:7;
+        for(const z of zones){
+          const x=Math.max(0,Math.min(f.x+f.w,z.x+z.w)-Math.max(f.x,z.x));
+          const y=Math.max(0,Math.min(f.y+f.d,z.y+z.d)-Math.max(f.y,z.y));
+          cost+=weight*x*y;
+        }
+      }
+      if(cost<score){score=cost;chosen={wall,pos};}
+    }
+  }
+  if(!chosen)return false;
+  const {wall,pos}=chosen;
+  project.openings.push({id:newId(),kind:'door',floor:newRoom.floor,dir:wall.dir,
+    x:wall.dir==='h'?pos:wall.c,y:wall.dir==='h'?wall.c:pos,width:.9});
+  return true;
+}
+// On room relocation, invalid openings must not remain as invisible "ghost" doors.
+function pruneOrphanOpenings(){
+  const walls=[...getWalls(project,0),...getWalls(project,1)];
+  const before=project.openings.length;
+  project.openings=project.openings.filter(o=>walls.some(w=>openingForWall(o,w)));
+  return before-project.openings.length;
+}
 function addRoom(a,b){
   const x=Math.min(a.x,b.x),y=Math.min(a.y,b.y),w=Math.abs(b.x-a.x),h=Math.abs(b.y-a.y);
   if(w<.75||h<.75){toast('Размер комнаты должен быть не меньше 0,75 м');return;}
   if(project.rooms.length>=80){toast('Достигнут лимит 80 помещений');return;}
   const type=(window.matchMedia('(max-width:840px)').matches?$('roomTypeMobile'):$('roomType')).value;
-  const id=newId();project.rooms.push({id,floor:activeFloor,type,name:roomTypes[type].label,style:null,x,y,w,h});
-  selectedId=id;update();toast('Комната создана · можно продолжать рисовать');
+  const room={id:newId(),floor:activeFloor,type,name:roomTypes[type].label,style:null,x,y,w,h};
+  if(roomOverlaps(room)){toast('Нельзя создавать комнату поверх другой на этом этаже');return;}
+  const id=room.id;project.rooms.push(room);
+  const connected=autoConnectRoom(room);
+  selectedId=id;update();renderer.setHumanFloor(activeFloor);toast(connected?'Комната создана, проход добавлен автоматически':'Комната создана · для перехода нужна дверь');
 }
 const svg=$('plan');
 function pointUnbounded(e){
@@ -1034,16 +1153,22 @@ svg.addEventListener('pointermove',e=>{
     const top=topHandle?clamp(pt.y,0,bottom-.75):o.y;
     const newRight=leftHandle?right:clamp(pt.x,o.x+.75,XMAX);
     const newBottom=topHandle?bottom:clamp(pt.y,o.y+.75,YMAX);
-    r.x=snap(left);r.y=snap(top);r.w=snap(newRight-left);r.h=snap(newBottom-top);
+    const proposed={x:snap(left),y:snap(top),w:snap(newRight-left),h:snap(newBottom-top)};
+    const accepted=applyRoomPlacement(r,proposed);
+    if(!accepted)$('planHint').textContent='Нельзя растянуть комнату поверх другой';
     drag.moved=drag.moved||Math.hypot(e.clientX-drag.startClient.x,e.clientY-drag.startClient.y)>4;
-    $('planHint').textContent=`Размер: ${nfmt(r.w,2)} × ${nfmt(r.h,2)} м`;
+    if(accepted)$('planHint').textContent=`Размер: ${nfmt(r.w,2)} × ${nfmt(r.h,2)} м`;
     renderPlan();renderer.draw(activeFloor);return;
   }
   if(drag.kind==='move'){
     const r=project.rooms.find(item=>item.id===drag.id);if(!r)return;
     const pt=pointUnbounded(e);
-    r.x=clamp(snap(drag.original.x+pt.x-drag.start.x),0,XMAX-r.w);
-    r.y=clamp(snap(drag.original.y+pt.y-drag.start.y),0,YMAX-r.h);
+    const nextX=clamp(snap(drag.original.x+pt.x-drag.start.x),0,XMAX-r.w);
+    const nextY=clamp(snap(drag.original.y+pt.y-drag.start.y),0,YMAX-r.h);
+    // Sliding against a neighbour is allowed; intersecting it is not.
+    if(!applyRoomPlacement(r,{x:nextX,y:nextY})){
+      if(!applyRoomPlacement(r,{x:nextX}))applyRoomPlacement(r,{y:nextY});
+    }
     drag.moved=drag.moved||Math.hypot(e.clientX-drag.startClient.x,e.clientY-drag.startClient.y)>5;
     const target=drag.moved?swapCandidate(pt,r.id):null;
     drag.swapTarget=target?.id||null;
@@ -1068,7 +1193,7 @@ function endInteraction(e,cancelled=false){
     const final=point(e);hoverPoint=null;addRoom(previous.start,final);return;
   }
   if(previous.kind==='resize'){
-    if(previous.moved){update();toast('Размеры изменены · расчёты обновлены');}
+    if(previous.moved){const orphan=pruneOrphanOpenings();update();toast(orphan?'Размеры изменены · лишние проёмы удалены':'Размеры изменены · расчёты обновлены');}
     else {syncControls();renderAll();openDrawer('properties');}
     return;
   }
@@ -1076,15 +1201,13 @@ function endInteraction(e,cancelled=false){
     const source=project.rooms.find(r=>r.id===previous.id);
     const target=project.rooms.find(r=>r.id===previous.swapTarget);
     if(source&&target&&previous.moved){
-      // Exchange room CENTRES: works even when room dimensions differ.
-      const sourceCenter={x:previous.original.x+source.w/2,y:previous.original.y+source.h/2};
-      const targetCenter={x:target.x+target.w/2,y:target.y+target.h/2};
-      source.x=clamp(snap(targetCenter.x-source.w/2),0,XMAX-source.w);
-      source.y=clamp(snap(targetCenter.y-source.h/2),0,YMAX-source.h);
-      target.x=clamp(snap(sourceCenter.x-target.w/2),0,XMAX-target.w);
-      target.y=clamp(snap(sourceCenter.y-target.h/2),0,YMAX-target.h);
-      toast('Комнаты поменялись местами · проверь проёмы');
+      if(trySwapRooms(source,target,previous.original)){
+        toast('Комнаты поменялись местами · проверь проёмы');
+      }else{
+        toast('Обмен невозможен: комнаты пересеклись бы');
+      }
     }else if(source&&previous.moved){toast('Комната перемещена · проверь проёмы')}
+    if(previous.moved)pruneOrphanOpenings();
     update();
     // Open properties on a click only, never in the middle of dragging.
     if(!previous.moved){
@@ -1149,22 +1272,27 @@ $('floorMode').addEventListener('click',()=>{renderer.view.showBoth=!renderer.vi
 $('roofToggle').addEventListener('change',e=>{renderer.view.roof=e.target.checked;renderer.draw(activeFloor)});
 $('humanToggle').addEventListener('change',e=>{renderer.setHuman(e.target.checked);});
 $('humanNext').addEventListener('click',()=>renderer.nextHumanAction());
+$('humanDestination').addEventListener('change',e=>{
+  if(e.target.value)renderer.goHumanToRoom(e.target.value);
+  e.target.value='';
+});
 $('demoBtn').addEventListener('click',()=>{if(!confirm('Заменить текущий дом демонстрационным примером?'))return;project=makeDemo();activeFloor=0;window.__floor=0;selectedId=null;tab='checks';update();toast('Демонстрационный проект загружен')});
 $('clearBtn').addEventListener('click',()=>{if(!confirm('Удалить все комнаты и проёмы?'))return;project.rooms=[];project.openings=[];selectedId=null;tab='checks';update();toast('План очищен')});
 $('saveBtn').addEventListener('click',()=>{downloadText(JSON.stringify(project,null,2),safeName(project.name)+'.json','application/json;charset=utf-8');toast('Файл JSON сохранён')});
+// FreeCAD 1.0.1 compatibility: DO NOT generate FCStd ZIP/XML in the browser.
+// FreeCAD itself must produce its native document. STEP is the reliable one-click
+// geometric interchange, and users can Save As .FCStd inside FreeCAD.
 async function exportFCStd(){
   if(!project.rooms.length){toast('Сначала добавь комнаты');return;}
-  const btn=$('freecadBtn');btn.disabled=true;btn.textContent='Создаём .FCStd…';
+  const btn=$('freecadBtn');btn.disabled=true;btn.textContent='Создаём 3D-модель…';
   try{
-    // Native FreeCAD ZIP containing a Document.xml, GuiDocument.xml and
-    // per-object genuine OpenCASCADE BREP shapes, generated without a server.
-    const blob=createFCStd(project);
-    downloadBlob(blob,safeName(project.name)+'.FCStd');
-    toast('FCStd (экспериментальный) скачан. Если FreeCAD не откроет его — используй STEP из меню ▾');
+    const step=createSTEP(project);
+    downloadText(step,safeName(project.name)+'.step','model/step');
+    toast('STEP скачан. FreeCAD 1.0.1: Файл → Открыть → Ctrl+S, чтобы сохранить .FCStd');
   }catch(err){
-    console.error('FORMA FCStd:',err);
-    toast('Ошибка создания .FCStd: '+(err.message||'Неизвестная ошибка'));
-  }finally{btn.disabled=false;btn.innerHTML='FreeCAD .FCStd <span aria-hidden="true">↓</span>';}
+    console.error('FORMA STEP:',err);
+    toast('Ошибка экспорта STEP: '+(err.message||'неизвестная ошибка'));
+  }finally{btn.disabled=false;btn.innerHTML='FreeCAD · STEP <span aria-hidden="true">↓</span>';}
 }
 function exportProject(format='obj'){
   if(!project.rooms.length){toast('Сначала добавь комнаты');return;}
@@ -1180,7 +1308,7 @@ function exportProject(format='obj'){
     toast('Готово: настоящая 3D-модель .STL');
   }else{
     downloadText(createFreeCADMacro(project),name+'.FCMacro','text/x-python;charset=utf-8');
-    toast('FCMacro · редактируемые CAD-объекты через макрос FreeCAD');
+    toast('Макрос скачан: запусти его в FreeCAD через Макросы → Макросы → Выполнить; нативный .FCStd сохранится в домашней папке');
   }
   $('exportMenu').hidden=true;
   $('exportMore').setAttribute('aria-expanded','false');
@@ -1462,303 +1590,407 @@ function createSTEP(project){
 
 exports.createFCStd = createFCStd;
 exports.createSTEP = createSTEP;
+exports.detailedSolids = detailedSolids;
 };
 
 __modules['src/character3d.js']=function(exports,__require){
 /**
- * FORMA scale human, height 1.80 m when standing.
- * Reads the SAME deterministic room furniture as the editors, so destinations
- * always track actual TV/fridge/stove/sink/desk/bed positions after edits.
- * Room-local A* avoids furniture; a door graph permits inter-room walking only
- * where a door connects two rooms. No jumping between storeys without stairs.
- * Visual reference & guided interaction; not a certified collision simulator.
+ * FORMA Studio | procedural 1.80m character and floor navigation.
+ * Geometric humanoid: smoothly shaded anatomical proportions, articulated legs,
+ * elbows, knees and pose-specific activities. No network assets or external libs.
+ * Navigation uses ONLY doors that join adjacent rooms, never walks through walls.
+ * Room and furniture knowledge is rebuilt from project data when it changes.
  */
-const {getFurniture} = __require('src/interior/layout.js');
-const {STORY_HEIGHT,SLAB_THICKNESS,clamp} = __require('src/geometry.js');
-const humanRGB=hex=>{const n=parseInt(hex.slice(1),16);return[(n>>16&255)/255,(n>>8&255)/255,(n&255)/255]};
-const humanSurfaces=[[[0,3,2,1],[0,0,-1]],[[4,5,6,7],[0,0,1]],[[0,1,5,4],[0,-1,0]],[[1,2,6,5],[1,0,0]],[[2,3,7,6],[0,1,0]],[[3,0,4,7],[-1,0,0]]];
-function humanCube(m,x,y,z,w,d,h,color){
-  if(w<=0||d<=0||h<=0)return;
-  const p=[[x,y,z],[x+w,y,z],[x+w,y+d,z],[x,y+d,z],[x,y,z+h],[x+w,y,z+h],[x+w,y+d,z+h],[x,y+d,z+h]];
-  for(const [face,n] of humanSurfaces)for(const i of [0,1,2,0,2,3]){m.vertex.push(...p[face[i]]);m.normal.push(...n);m.color.push(...color)}
-}
-function humanCylinder(m,x,y,z,r,h,col,N=12){
-  for(let i=0;i<N;i++){
-    const a=2*Math.PI*i/N,b=2*Math.PI*(i+1)/N;
-    const points=[[x+r*Math.cos(a),y+r*Math.sin(a),z],[x+r*Math.cos(b),y+r*Math.sin(b),z],[x+r*Math.cos(b),y+r*Math.sin(b),z+h],[x+r*Math.cos(a),y+r*Math.sin(a),z+h]];
-    const normal=[Math.cos((a+b)/2),Math.sin((a+b)/2),0];
-    for(const j of [0,1,2,0,2,3]){m.vertex.push(...points[j]);m.normal.push(...normal);m.color.push(...col)}
-    for(const j of [0,1,2]){m.vertex.push(...[[x,y,z+h],points[3],points[2]][j]);m.normal.push(0,0,1);m.color.push(...col)}
-  }
-}
-function humanEllipsoid(m,x,y,z,rx,ry,rz,color,lat=8,lon=12){
+const {getFurniture}=__require('src/interior/layout.js');
+const {STORY_HEIGHT,SLAB_THICKNESS,clamp,roomTypes}=__require('src/geometry.js');
+const RGB=hex=>{const n=parseInt(hex.slice(1),16);return[(n>>16&255)/255,(n>>8&255)/255,(n&255)/255]};
+const SKIN=RGB('#dfae8e'),SKIN_SHADOW=RGB('#c99477'),HAIR=RGB('#302c32'),HAIR_LITE=RGB('#423940');
+const COAT=RGB('#4a7992'),COAT_DARK=RGB('#35576b'),COAT_LITE=RGB('#6594a8');
+const PANTS=RGB('#303948'),PANTS_LITE=RGB('#445060'),SHOES=RGB('#edeae4'),SOLES=RGB('#3c4855');
+const STEEL=RGB('#bdc9ce'),WHITE=RGB('#e5edeb'),EYE=RGB('#1e2730');
+function vertex(mesh,p,n,c){mesh.vertex.push(...p);mesh.normal.push(...n);mesh.color.push(...c)}
+function tri(mesh,a,b,c,n,col){vertex(mesh,a,n,col);vertex(mesh,b,n,col);vertex(mesh,c,n,col)}
+function ellipsoid(mesh,cx,cy,cz,rx,ry,rz,col,lat=8,lon=12){
   for(let j=0;j<lat;j++){
     const v0=-Math.PI/2+Math.PI*j/lat,v1=-Math.PI/2+Math.PI*(j+1)/lat;
     for(let i=0;i<lon;i++){
       const u0=2*Math.PI*i/lon,u1=2*Math.PI*(i+1)/lon;
-      const pt=(u,v)=>{const c=Math.cos(v);return [x+rx*c*Math.cos(u),y+ry*c*Math.sin(u),z+rz*Math.sin(v)]};
+      const p=(u,v)=>[cx+rx*Math.cos(v)*Math.cos(u),cy+ry*Math.cos(v)*Math.sin(u),cz+rz*Math.sin(v)];
       for(const [u,v] of [[u0,v0],[u1,v0],[u1,v1],[u0,v0],[u1,v1],[u0,v1]]){
-        const p=pt(u,v);m.vertex.push(...p);const n=[(p[0]-x)/rx,(p[1]-y)/ry,(p[2]-z)/rz],len=Math.hypot(...n)||1;m.normal.push(...n.map(t=>t/len));m.color.push(...color);
+        const q=p(u,v),n=[(q[0]-cx)/rx,(q[1]-cy)/ry,(q[2]-cz)/rz];
+        const length=Math.hypot(...n)||1;vertex(mesh,q,n.map(t=>t/length),col);
       }
     }
   }
 }
-const actions={
-  tv:{label:'Смотрит телевизор',go:'Идёт к телевизору'},
-  fridge:{label:'Открывает холодильник',go:'Идёт к холодильнику'},
-  desk:{label:'Работает за столом',go:'Идёт к рабочему столу'},
-  stove:{label:'Готовит на кухне',go:'Идёт к плите'},
-  sink:{label:'Моет руки',go:'Идёт к раковине'},
-  bed:{label:'Отдыхает у кровати',go:'Идёт к кровати'},
-  sofa:{label:'Отдыхает на диване',go:'Идёт к дивану'},
-  roam:{label:'Осматривает помещение',go:'Гуляет по дому'}
-};
-const priorities=['tv','fridge','stove','sink','desk','sofa','bed'];
-function inside(r,p,margin=.23){return p.x>r.x+margin&&p.x<r.x+r.w-margin&&p.y>r.y+margin&&p.y<r.y+r.h-margin}
-function blocked(point,furniture,margin=.16){
-  return furniture.some(f=>f.kind!=='rug'&&f.kind!=='plant'&&f.h>.16&&
-    point.x>f.x-margin&&point.x<f.x+f.w+margin&&point.y>f.y-margin&&point.y<f.y+f.d+margin);
+function bone(mesh,start,end,r0,r1,color,segments=10){
+  const dx=end[0]-start[0],dy=end[1]-start[1],dz=end[2]-start[2],len=Math.hypot(dx,dy,dz);
+  if(len<.0001)return;
+  const axis=[dx/len,dy/len,dz/len];
+  let u=[-axis[1],axis[0],0];let ul=Math.hypot(...u);
+  if(ul<.1){u=[1,0,0];ul=1;}
+  u=u.map(x=>x/ul);
+  const v=[axis[1]*u[2]-axis[2]*u[1],axis[2]*u[0]-axis[0]*u[2],axis[0]*u[1]-axis[1]*u[0]];
+  for(let i=0;i<segments;i++){
+    const a=i*2*Math.PI/segments,b=(i+1)*2*Math.PI/segments;
+    const ring=(center,rad,angle)=>center.map((k,j)=>k+rad*(Math.cos(angle)*u[j]+Math.sin(angle)*v[j]));
+    const q0=ring(start,r0,a),q1=ring(start,r0,b),q2=ring(end,r1,b),q3=ring(end,r1,a);
+    const norm=ang=>u.map((x,j)=>x*Math.cos(ang)+v[j]*Math.sin(ang));
+    for(const [pos,ang] of [[q0,a],[q1,b],[q2,b],[q0,a],[q2,b],[q3,a]])vertex(mesh,pos,norm(ang),color);
+  }
 }
-function findFree(room,items,desired){
-  if(inside(room,desired)&&!blocked(desired,items))return desired;
-  let result=null,best=Infinity;
-  const step=.25;
-  for(let y=room.y+.38;y<room.y+room.h-.28;y+=step)for(let x=room.x+.38;x<room.x+room.w-.28;x+=step){
-    const p={x,y};if(inside(room,p)&&!blocked(p,items)){
-      const dist=(x-desired.x)**2+(y-desired.y)**2;
-      if(dist<best){best=dist;result=p}
+function torso(mesh,z,forward=0){
+  // Three smooth elliptical horizontal rings; back, collar and jacket seam.
+  const rings=[{z:z+.01,rx:.19,ry:.112},{z:z+.25,rx:.245,ry:.138},{z:z+.47,rx:.215,ry:.12}];
+  for(let k=0;k<2;k++)for(let i=0;i<16;i++){
+    const a=i*Math.PI/8,b=(i+1)*Math.PI/8;
+    const p=(ring,angle)=>[Math.cos(angle)*ring.rx,forward+Math.sin(angle)*ring.ry,ring.z];
+    const norm=angle=>[Math.cos(angle),Math.sin(angle),.03];
+    const p0=p(rings[k],a),p1=p(rings[k],b),p2=p(rings[k+1],b),p3=p(rings[k+1],a);
+    const color=k===1?COAT:COAT_DARK;
+    for(const [q,angle] of [[p0,a],[p1,b],[p2,b],[p0,a],[p2,b],[p3,a]])vertex(mesh,q,norm(angle),color);
+  }
+  bone(mesh,[-.005,forward-.142,z+.095],[-.005,forward-.132,z+.425],.006,.006,COAT_LITE,6);
+  bone(mesh,[-.115,forward-.126,z+.44],[.115,forward-.126,z+.44],.012,.012,WHITE,8);
+  ellipsoid(mesh,0,forward,z+.44,.195,.117,.04,COAT_DARK,5,12);
+}
+function inside(room,p,margin=.24){return p.x>=room.x+margin&&p.x<=room.x+room.w-margin&&p.y>=room.y+margin&&p.y<=room.y+room.h-margin}
+function blocked(p,furniture,margin=.18){return furniture.some(f=>f.h>.18&&!['rug','plant','pillow'].includes(f.kind)&&p.x>f.x-margin&&p.x<f.x+f.w+margin&&p.y>f.y-margin&&p.y<f.y+f.d+margin)}
+function nearestWalkable(room,furniture,target,margin=.24){
+  if(inside(room,target,margin)&&!blocked(target,furniture))return {x:target.x,y:target.y};
+  let best=null,dist=Infinity;
+  for(let y=room.y+margin;y<=room.y+room.h-margin+.001;y+=.2){
+    for(let x=room.x+margin;x<=room.x+room.w-margin+.001;x+=.2){
+      const p={x,y};if(!inside(room,p,margin)||blocked(p,furniture))continue;
+      const d=(x-target.x)**2+(y-target.y)**2;if(d<dist){dist=d;best=p;}
     }
   }
-  return result||{x:room.x+room.w*.5,y:room.y+room.h*.5};
+  return best;
 }
-function approach(f,room,items){
-  // Every target is derived from the actual furniture footprint, not hardcoded room positions.
-  const cx=f.x+f.w*.5,cy=f.y+f.d*.5;
-  let candidates=[
-    {x:cx,y:f.y+f.d+.63}, {x:cx,y:f.y-.63},
-    {x:f.x-.58,y:cy},{x:f.x+f.w+.58,y:cy}
-  ];
-  if(f.kind==='tv')candidates=[candidates[1],candidates[0],...candidates.slice(2)];
-  if(f.kind==='fridge'||f.kind==='stove'||f.kind==='sink')candidates=[candidates[0],candidates[2],candidates[3],candidates[1]];
-  const free=candidates.find(p=>inside(room,p)&&!blocked(p,items))||findFree(room,items,candidates[0]);
-  return {...free,face:Math.atan2(cx-free.x,-(cy-free.y)),furniture:f,activity:f.kind,roomId:room.id,floor:room.floor,roomName:room.name};
+function targetByFurniture(f,r,items,project){
+  const cx=f.x+f.w/2,cy=f.y+f.d/2;
+  // The furniture center is real; the character stands on a free side facing it.
+  const candidates=[{x:cx,y:f.y+f.d+.49},{x:cx,y:f.y-.49},
+    {x:f.x-.49,y:cy},{x:f.x+f.w+.49,y:cy}];
+  if(f.kind==='tv')candidates.reverse();
+  const entrances=(project?.openings||[]).filter(o=>touchesDoor(o,r))
+    .map(o=>nearestWalkable(r,items,doorInside(o,r))).filter(Boolean);
+  if(!entrances.length){const center=nearestWalkable(r,items,{x:r.x+r.w/2,y:r.y+r.h/2});if(center)entrances.push(center);}
+  let best=null,score=Infinity;
+  for(let k=0;k<candidates.length;k++){
+    const p=nearestWalkable(r,items,candidates[k]);if(!p)continue;
+    // Prefer an approach connected to at least one real room entrance.
+    // It prevents selecting the inaccessible side of a bed or a fridge.
+    const accessible=entrances.some(start=>pathInside(r,items,start,p)!==null);
+    if(!accessible)continue;
+    const d=Math.hypot(cx-p.x,cy-p.y)+Math.hypot(p.x-candidates[k].x,p.y-candidates[k].y)*2+k*.01;
+    if(d<score){score=d;best=p;}
+  }
+  if(!best)return null;
+  return {...best,face:Math.atan2(cx-best.x,best.y-cy),furniture:f,activity:f.kind,roomId:r.id,roomName:r.name||roomTypes[r.type]?.label||'Комната',roomType:r.type,floor:r.floor};
 }
-function adjacentToDoor(o,r){
-  if(o.floor!==r.floor)return false;
-  if(o.dir==='v')return (Math.abs(r.x-o.x)<.06||Math.abs(r.x+r.w-o.x)<.06)&&o.y>r.y+.01&&o.y<r.y+r.h-.01;
-  return (Math.abs(r.y-o.y)<.06||Math.abs(r.y+r.h-o.y)<.06)&&o.x>r.x+.01&&o.x<r.x+r.w-.01;
+function touchesDoor(o,r){
+  if(o.floor!==r.floor||o.kind!=='door')return false;
+  if(o.dir==='v')return (Math.abs(r.x-o.x)<.06||Math.abs(r.x+r.w-o.x)<.06)&&o.y>=r.y+.04&&o.y<=r.y+r.h-.04;
+  return (Math.abs(r.y-o.y)<.06||Math.abs(r.y+r.h-o.y)<.06)&&o.x>=r.x+.04&&o.x<=r.x+r.w-.04;
 }
-function doorInside(o,r){
-  const m=.40;
-  if(o.dir==='v')return {x:o.x+(Math.abs(r.x-o.x)<.06?m:-m),y:o.y};
-  return {x:o.x,y:o.y+(Math.abs(r.y-o.y)<.06?m:-m)};
+function doorInside(o,r,offset=.32){
+  return o.dir==='v'?{x:o.x+(Math.abs(r.x-o.x)<.06?offset:-offset),y:o.y}:
+    {x:o.x,y:o.y+(Math.abs(r.y-o.y)<.06?offset:-offset)};
 }
-function doorGraph(project){
-  const map=new Map(project.rooms.map(r=>[r.id,[]]));
-  for(const opening of project.openings.filter(o=>o.kind==='door')){
-    const linked=project.rooms.filter(r=>adjacentToDoor(opening,r));
-    for(let a=0;a<linked.length;a++)for(let b=a+1;b<linked.length;b++){
-      const ra=linked[a],rb=linked[b];if(ra.floor!==rb.floor)continue;
-      map.get(ra.id).push({to:rb.id,door:opening});map.get(rb.id).push({to:ra.id,door:opening});
+function graphOf(project){
+  const graph=new Map(project.rooms.map(r=>[r.id,[]]));
+  for(const o of project.openings){if(o.kind!=='door')continue;
+    const rooms=project.rooms.filter(r=>touchesDoor(o,r));
+    for(let i=0;i<rooms.length;i++)for(let j=i+1;j<rooms.length;j++){
+      if(rooms[i].floor!==rooms[j].floor)continue;
+      graph.get(rooms[i].id).push({to:rooms[j].id,door:o});
+      graph.get(rooms[j].id).push({to:rooms[i].id,door:o});
     }
   }
-  return map;
+  return graph;
 }
-function viaDoors(graph,from,to){
-  if(from===to)return [];
-  const queue=[{room:from,steps:[]}],seen=new Set([from]);
-  while(queue.length){
-    const q=queue.shift();for(const edge of graph.get(q.room)||[]){
-      if(seen.has(edge.to))continue;
-      const steps=[...q.steps,{from:q.room,to:edge.to,door:edge.door}];
-      if(edge.to===to)return steps;
-      seen.add(edge.to);queue.push({room:edge.to,steps});
+function roomRoute(graph,start,end){
+  if(start===end)return [];
+  const q=[{id:start,doors:[]}],seen=new Set([start]);
+  for(let i=0;i<q.length;i++)for(const edge of graph.get(q[i].id)||[]){
+    if(seen.has(edge.to))continue;
+    const doors=[...q[i].doors,{from:q[i].id,to:edge.to,door:edge.door}];
+    if(edge.to===end)return doors;
+    seen.add(edge.to);q.push({id:edge.to,doors});
+  }
+  return null;
+}
+function pathInside(room,items,start,end){
+  // 20 cm 8-way A*, with diagonal collision checks and no shortcuts through objects.
+  const gap=.21,step=.2,cols=Math.max(0,Math.floor((room.w-2*gap)/step)),rows=Math.max(0,Math.floor((room.h-2*gap)/step));
+  if(cols*rows>15000)return null;
+  const at=(i,j)=>({x:room.x+gap+i*step,y:room.y+gap+j*step});
+  const nearest=p=>{
+    let best=null,dist=Infinity;
+    for(let j=0;j<=rows;j++)for(let i=0;i<=cols;i++){
+      const x=at(i,j);if(!inside(room,x,.19)||blocked(x,items,.15))continue;
+      const d=(x.x-p.x)**2+(x.y-p.y)**2;if(d<dist){dist=d;best={i,j};}
+    }
+    return best;
+  };
+  const a=nearest(start),b=nearest(end);if(!a||!b)return null;
+  const id=(i,j)=>j*(cols+1)+i,S=id(a.i,a.j),T=id(b.i,b.j);
+  const frontier=[{i:a.i,j:a.j,f:0}],prev=new Map(),score=new Map([[S,0]]),visited=new Set();
+  const dirs=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]];
+  let iter=0;
+  while(frontier.length&&iter++<10000){
+    frontier.sort((p,q)=>p.f-q.f);const n=frontier.shift(),k=id(n.i,n.j);
+    if(visited.has(k))continue;if(k===T){
+      const points=[],seen=new Set();let cursor=T;
+      while(!seen.has(cursor)){seen.add(cursor);const i=cursor%(cols+1),j=Math.floor(cursor/(cols+1));points.push(at(i,j));if(cursor===S)break;cursor=prev.get(cursor);if(cursor===undefined)return null;}
+      points.reverse();
+      // Add only endpoints after the grid route; each segment must remain navigable.
+      if(Math.hypot(start.x-points[0].x,start.y-points[0].y)<.38)points.unshift(start);
+      if(Math.hypot(end.x-points.at(-1).x,end.y-points.at(-1).y)<.38)points.push(end);
+      return points;
+    }
+    visited.add(k);
+    for(const [di,dj] of dirs){const i=n.i+di,j=n.j+dj;if(i<0||j<0||i>cols||j>rows)continue;
+      const p=at(i,j),t=id(i,j);if(visited.has(t)||!inside(room,p,.19)||blocked(p,items,.15))continue;
+      if(di&&dj){const p1=at(i,n.j),p2=at(n.i,j);if(blocked(p1,items,.15)||blocked(p2,items,.15))continue;}
+      const g=score.get(k)+Math.hypot(di,dj);
+      if(g<(score.get(t)??Infinity)){score.set(t,g);prev.set(t,k);frontier.push({i,j,f:g+Math.hypot(b.i-i,b.j-j)});}
     }
   }
   return null;
 }
-function pathWithin(room,items,start,end){
-  // A* on a local 25 cm grid; ignores area rugs and avoids major furniture.
-  const step=.25,cols=Math.max(1,Math.floor((room.w-.50)/step)),rows=Math.max(1,Math.floor((room.h-.50)/step));
-  if(cols*rows>12000)return [end];
-  const at=(i,j)=>({x:room.x+.25+i*step,y:room.y+.25+j*step});
-  const nearest=(pt)=>{
-    let best=null,dmin=Infinity;
-    for(let j=0;j<=rows;j++)for(let i=0;i<=cols;i++){
-      const p=at(i,j);if(!inside(room,p,.16)||blocked(p,items,.11))continue;
-      const d=(p.x-pt.x)**2+(p.y-pt.y)**2;
-      if(d<dmin){dmin=d;best={i,j}}
-    }
-    return best;
-  };
-  const s=nearest(start),t=nearest(end);if(!s||!t)return [end];
-  const key=(i,j)=>i+','+j,goal=key(t.i,t.j),first=key(s.i,s.j),open=[{i:s.i,j:s.j,f:0}],from=new Map(),cost=new Map([[first,0]]),closed=new Set();
-  const dirs=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]];
-  let iterations=0;
-  while(open.length&&iterations++<4000){
-    open.sort((a,b)=>a.f-b.f);const current=open.shift();const k=key(current.i,current.j);
-    if(closed.has(k))continue;
-    if(k===goal){const track=[at(t.i,t.j)];let cursor=goal;
-      while(cursor!==first&&from.has(cursor)){cursor=from.get(cursor);const [i,j]=cursor.split(',').map(Number);track.push(at(i,j))}
-      track.reverse();track.push(end);
-      // Remove redundant collinear waypoints for smooth animation.
-      const simplified=[track[0]];
-      for(let i=1;i<track.length-1;i++){
-        const p=simplified[simplified.length-1],q=track[i],r=track[i+1];
-        if(Math.abs((q.x-p.x)*(r.y-q.y)-(q.y-p.y)*(r.x-q.x))>.002)simplified.push(q);
-      }
-      simplified.push(track.at(-1));return simplified;
-    }
-    closed.add(k);
-    for(const [di,dj] of dirs){const i=current.i+di,j=current.j+dj;if(i<0||j<0||i>cols||j>rows)continue;
-      const p=at(i,j),next=key(i,j);if(!inside(room,p,.16)||blocked(p,items,.11)||closed.has(next))continue;
-      if(di&&dj){const p1=at(i,current.j),p2=at(current.i,j);if(blocked(p1,items,.11)||blocked(p2,items,.11))continue;}
-      const g=cost.get(k)+Math.hypot(di,dj);
-      if(g<(cost.get(next)??Infinity)){cost.set(next,g);from.set(next,k);open.push({i,j,f:g+Math.hypot(t.i-i,t.j-j)});}
-    }
-  }
-  return [end];
-}
+const labels={
+  tv:['Смотрит телевизор','Идёт к телевизору'],fridge:['Открывает холодильник','Идёт к холодильнику'],
+  stove:['Готовит еду','Идёт к плите'],sink:['Моет руки','Идёт к раковине'],
+  desk:['Работает за столом','Идёт к столу'],bed:['Осматривает спальню','Идёт к кровати'],
+  sofa:['Сидит на диване','Идёт к дивану'],shower:['Осматривает ванную','Идёт к душу'],
+  bench:['Отдыхает в прихожей','Идёт к скамье'],roam:['Осматривает помещение','Идёт в комнату']
+};
+const useful={living:['tv','sofa','armchair'],bedroom:['bed'],kitchen:['fridge','stove','sink'],bathroom:['sink','shower'],office:['desk'],hallway:['bench']};
 function createHumanDirector(){
   const actor={enabled:true,x:0,y:0,floor:0,facing:0,activity:'roam',phase:'idle',motion:0,activityProgress:0};
-  let signature='',targets=[],furniture=[],graph=new Map(),goal=null,goalIndex=-1,route=[],roomId=null,roomName='',stopAt=0,last=0;
-  function reset(project){
-    signature=JSON.stringify([project.rooms,project.openings,project.settings?.interiorStyle]);
-    furniture=getFurniture(project);
-    const roomItems=r=>furniture.filter(f=>f.roomId===r.id);
-    targets=[];
-    for(const kind of priorities)for(const f of furniture.filter(f=>f.kind===kind)){
-      const room=project.rooms.find(r=>r.id===f.roomId);if(room){targets.push(approach(f,room,roomItems(room)));}
+  let fingerprint='',items=[],graph=new Map(),goals=[],goal=null,lastGoalKey='',route=[],roomId=null,roomName='',actionEnds=0,last=0,notice='';
+  function compile(project,preserve=true){
+    fingerprint=JSON.stringify([project.rooms,project.openings,project.settings?.interiorStyle]);
+    items=getFurniture(project);graph=graphOf(project);
+    const byRoom=r=>items.filter(f=>f.roomId===r.id);
+    goals=[];
+    for(const r of project.rooms){
+      const relevant=useful[r.type]||[];
+      const chosen=byRoom(r).filter(f=>relevant.includes(f.kind));
+      for(const f of chosen){const t=targetByFurniture(f,r,byRoom(r),project);if(t)goals.push({...t,key:r.id+'|'+f.kind+'|'+f.x+'|'+f.y});}
+      const center=nearestWalkable(r,byRoom(r),{x:r.x+r.w*.5,y:r.y+r.h*.5});
+      if(center)goals.push({...center,activity:'roam',roomId:r.id,roomName:r.name||roomTypes[r.type]?.label||'Комната',roomType:r.type,floor:r.floor,face:0,key:r.id+'|roam'});
     }
-    if(!targets.length)targets=project.rooms.map(room=>({ ...findFree(room,roomItems(room),{x:room.x+room.w/2,y:room.y+room.h/2}),roomId:room.id,floor:room.floor,roomName:room.name,activity:'roam',face:0}));
-    graph=doorGraph(project);
-    const room=project.rooms.find(r=>r.floor===0)||project.rooms[0];
-    if(!room){actor.phase='idle';goal=null;return;}
-    const start=findFree(room,roomItems(room),{x:room.x+room.w/2,y:room.y+room.h/2});
-    actor.x=start.x;actor.y=start.y;actor.floor=room.floor;actor.phase='idle';actor.motion=0;
-    roomId=room.id;roomName=room.name;goalIndex=-1;goal=null;route=[];stopAt=0;last=0;
+    let room=null;
+    if(preserve)room=project.rooms.find(r=>r.floor===actor.floor&&inside(r,actor,.04));
+    if(!room)room=project.rooms.find(r=>r.id===roomId&&r.floor===actor.floor)||project.rooms.find(r=>r.floor===0)||project.rooms[0]||null;
+    if(!room){roomId=null;goal=null;route=[];actor.phase='idle';notice='Сначала создай комнату';return;}
+    if(!preserve||!inside(room,actor,.04)){
+      const start=nearestWalkable(room,byRoom(room),{x:room.x+room.w/2,y:room.y+room.h/2});
+      if(start){actor.x=start.x;actor.y=start.y;}else{actor.x=room.x+room.w/2;actor.y=room.y+room.h/2;}
+    }
+    actor.floor=room.floor;roomId=room.id;roomName=room.name;
+    goal=null;route=[];actor.phase='idle';actor.motion=0;notice='';
+    // Re-evaluate path immediately on EVERY new/edited room, including room type changes.
   }
-  function planNext(project){
-    if(!targets.length){actor.phase='idle';return;}
-    let candidate=null,index=-1,doors=null;
-    for(let k=1;k<=targets.length;k++){
-      const i=(goalIndex+k)%targets.length,t=targets[i];if(t.floor!==actor.floor)continue;
-      const r=viaDoors(graph,roomId,t.roomId);if(r!==null){candidate=t;index=i;doors=r;break;}
+  function tryGoal(project,g){
+    const links=roomRoute(graph,roomId,g.roomId);if(links===null||actor.floor!==g.floor)return null;
+    const byId=new Map(project.rooms.map(r=>[r.id,r]));
+    const of=r=>items.filter(f=>f.roomId===r.id);
+    const waypoints=[];let current={x:actor.x,y:actor.y};let currentId=roomId;
+    for(const link of links){
+      const from=byId.get(link.from),to=byId.get(link.to);if(!from||!to)return null;
+      const leave=nearestWalkable(from,of(from),doorInside(link.door,from));
+      const arrive=nearestWalkable(to,of(to),doorInside(link.door,to));
+      if(!leave||!arrive)return null;
+      const segment=pathInside(from,of(from),current,leave);if(!segment)return null;
+      for(const p of segment)waypoints.push({...p,roomId:from.id});
+      // The actual opening is the ONLY place where the path crosses the wall.
+      waypoints.push({x:link.door.x,y:link.door.y,roomId:from.id});
+      waypoints.push({...arrive,roomId:to.id});
+      current=arrive;currentId=to.id;
     }
-    if(!candidate){actor.phase='idle';return;}
-    let currentRoom=project.rooms.find(r=>r.id===roomId),current={x:actor.x,y:actor.y};route=[];
-    const items=r=>furniture.filter(f=>f.roomId===r.id);
-    for(const connection of doors){
-      const a=project.rooms.find(r=>r.id===connection.from),b=project.rooms.find(r=>r.id===connection.to);
-      const from=doorInside(connection.door,a),to=doorInside(connection.door,b);
-      for(const p of pathWithin(a,items(a),current,from))route.push({...p,roomId:a.id});
-      route.push({x:connection.door.x,y:connection.door.y,roomId:a.id});
-      route.push({...to,roomId:b.id});current=to;currentRoom=b;
+    const targetRoom=byId.get(g.roomId);if(!targetRoom)return null;
+    const end=pathInside(targetRoom,of(targetRoom),current,g);if(!end)return null;
+    for(const p of end)waypoints.push({...p,roomId:targetRoom.id});
+    if(!waypoints.length)waypoints.push({x:g.x,y:g.y,roomId:g.roomId});
+    return waypoints;
+  }
+  function choose(project){
+    if(!goals.length){notice='Нет доступных помещений';actor.phase='idle';return;}
+    const old=goals.findIndex(g=>g.key===lastGoalKey);
+    // Fair round robin: every room gets a visit, new rooms are included at once.
+    for(let step=1;step<=goals.length;step++){
+      const g=goals[(Math.max(-1,old)+step)%goals.length];if(g.floor!==actor.floor)continue;
+      const path=tryGoal(project,g);if(path){goal=g;lastGoalKey=g.key;route=path;actor.phase='walking';actor.activity=g.activity;actor.activityProgress=0;notice='';return;}
     }
-    if(!currentRoom)currentRoom=project.rooms.find(r=>r.id===candidate.roomId);
-    for(const p of pathWithin(currentRoom,items(currentRoom),current,{x:candidate.x,y:candidate.y}))route.push({...p,roomId:currentRoom.id});
-    goal=candidate;goalIndex=index;actor.phase='walking';actor.activity=candidate.activity;stopAt=0;
-    if(route.length<1)route=[{x:candidate.x,y:candidate.y,roomId:candidate.roomId}];
+    goal=null;route=[];actor.phase='idle';notice='Нет прохода в другие комнаты — добавь дверь';
   }
   function tick(now,project){
     if(!project)return actor;
-    const newSignature=JSON.stringify([project.rooms,project.openings,project.settings?.interiorStyle]);
-    if(signature!==newSignature)reset(project);
-    const dt=Math.min(.09,Math.max(0,(now-last)/1000)||0);last=now;
+    const signature=JSON.stringify([project.rooms,project.openings,project.settings?.interiorStyle]);
+    if(signature!==fingerprint)compile(project,Boolean(fingerprint));
+    const dt=last?Math.min(.05,Math.max(0,(now-last)/1000)):0;last=now;
     if(!actor.enabled||!project.rooms.length)return actor;
-    if(!goal)planNext(project);
+    if(!goal&&actor.phase!=='blocked')choose(project);
     if(actor.phase==='walking'){
-      const point=route[0];if(point){const dx=point.x-actor.x,dy=point.y-actor.y,dist=Math.hypot(dx,dy),speed=1.05*dt;
-        if(dist<=Math.max(.055,speed)){actor.x=point.x;actor.y=point.y;route.shift();roomId=point.roomId;}
-        else{actor.x+=dx/dist*speed;actor.y+=dy/dist*speed;actor.facing=Math.atan2(dx,-dy);}
-        actor.motion+=dt*8;
+      // Move at constant metres/sec; no teleporting, frame-rate independent.
+      let distance=1.05*dt;
+      while(route.length&&distance>0){
+        const p=route[0],dx=p.x-actor.x,dy=p.y-actor.y,dist=Math.hypot(dx,dy);
+        if(dist<=Math.max(.0001,distance)){
+          actor.x=p.x;actor.y=p.y;roomId=p.roomId;route.shift();distance-=dist;
+        }else{
+          const angle=Math.atan2(dx,-dy),delta=Math.atan2(Math.sin(angle-actor.facing),Math.cos(angle-actor.facing));
+          actor.facing+=clamp(delta,-dt*5,dt*5);
+          actor.x+=dx/dist*distance;actor.y+=dy/dist*distance;distance=0;
+        }
       }
-      if(!route.length){actor.phase='acting';actor.motion=0;actor.facing=goal.face;stopAt=now+5600;roomId=goal.roomId;roomName=goal.roomName;}
+      actor.motion+=dt*8.6;
+      if(!route.length){
+        actor.phase='acting';actor.motion=0;actor.activityProgress=0;
+        roomId=goal.roomId;roomName=goal.roomName;actor.facing=goal.face;
+        actionEnds=now+(goal.activity==='roam'?2200:3600);
+      }
     }else if(actor.phase==='acting'){
-      actor.activityProgress=clamp(1-(stopAt-now)/5600,0,1);
-      if(now>stopAt)planNext(project);
+      const total=goal?.activity==='roam'?2200:3600;
+      actor.activityProgress=clamp(1-(actionEnds-now)/total,0,1);
+      if(now>=actionEnds)choose(project);
     }
     return actor;
   }
-  function next(project){if(!project)return;planNext(project);}
+  function moveToFloor(project,floor){
+    if(!project||floor===actor.floor)return;
+    const room=project.rooms.find(r=>r.floor===floor);
+    if(!room)return; // No accessible room on the selected floor yet.
+    const furniture=getFurniture(project).filter(f=>f.roomId===room.id);
+    const start=nearestWalkable(room,furniture,{x:room.x+room.w*.5,y:room.y+room.h*.5});
+    if(!start)return;
+    actor.floor=floor;actor.x=start.x;actor.y=start.y;roomId=room.id;roomName=room.name;
+    compile(project,true);
+    notice='Просмотр '+(floor+1)+'-го этажа · переход по лестнице не моделируется';
+  }
+  function selectRoom(project,id){
+    if(!project)return false;
+    compile(project,true);
+    const options=goals.filter(g=>g.roomId===id&&g.floor===actor.floor);
+    for(const g of options){const path=tryGoal(project,g);if(!path)continue;
+      goal=g;lastGoalKey=g.key;route=path;actor.phase='walking';actor.activity=g.activity;
+      actor.activityProgress=0;notice='';return true;
+    }
+    const room=project.rooms.find(r=>r.id===id);
+    if(room){goal=null;route=[];actor.phase='blocked';notice='Нет прохода в «'+room.name+'». Добавь дверь.';}
+    return false;
+  }
+  function next(project){if(!project)return;compile(project,true);choose(project)}
   function caption(){
     if(!actor.enabled)return 'Персонаж скрыт';
-    if(!goal)return 'Изучает планировку · рост 180 см';
-    const a=actions[actor.activity]||actions.roam;
-    return `${actor.phase==='walking'?a.go:a.label} · ${goal.roomName}`;
+    if(!goal)return notice||'Осматривает дом · рост 180 см';
+    const lbl=labels[actor.activity]||labels.roam;
+    return (actor.phase==='walking'?lbl[1]:lbl[0])+' · '+(goal.roomName||'Помещение');
   }
-  return {actor,tick,reset,next,caption,get currentGoal(){return goal;}};
+  return {actor,tick,reset:p=>compile(p,false),next,selectRoom,moveToFloor,caption,get currentGoal(){return goal;},
+    debug:()=>({roomId,roomName,goal,goals:goals.map(g=>({roomId:g.roomId,roomType:g.roomType,activity:g.activity})),route:[...route],notice})};
 }
 function makeHumanMesh(actor,project,goal){
-  const m={vertex:[],normal:[],color:[]};
-  const skin=humanRGB('#e7b998'),hair=humanRGB('#3b2e2b'),hoodie=humanRGB('#6087a1'),sleeves=humanRGB('#496f89');
-  const seams=humanRGB('#a5c3d3'),pants=humanRGB('#263d52'),shoe=humanRGB('#e8e9df'),sole=humanRGB('#35434c');
-  const walk=actor.phase==='walking',doing=actor.phase==='acting';
-  const step=walk?Math.sin(actor.motion)*.17:0;
-  const seated=doing&&(actor.activity==='tv'||actor.activity==='sofa');
-  // 180 cm from shoe sole to hair crown while standing, 153 cm when seated.
-  const offset=seated?-.19:0;
-  if(seated){
-    for(const xx of [-.19,.08]){
-      humanCube(m,xx,-.26,.48,.115,.37,.15,pants);
-      humanCube(m,xx,-.49,.10,.11,.14,.43,pants);
-      humanCube(m,xx,-.54,.04,.13,.22,.07,shoe);
-    }
-  }else{
-    for(const [i,xx] of [[0,-.18],[1,.07]]){
-      const move=i===0?step:-step;
-      humanCube(m,xx,move-.055,.055,.12,.20,.08,sole);
-      humanCube(m,xx,move-.078,.095,.14,.22,.09,shoe);
-      humanCube(m,xx,move,.16,.125,.145,.59,pants);
-      humanCube(m,xx+.015,move-.095,.095,.09,.03,.018,seams);
-    }
+  const mesh={vertex:[],normal:[],color:[]},walking=actor.phase==='walking',acting=actor.phase==='acting';
+  const t=actor.motion,phase=actor.activityProgress||0;
+  const swing=walking?Math.sin(t)*.34:0,lift=walking?Math.max(0,Math.sin(t))*.09:0;
+  const step2=walking?Math.sin(t+Math.PI)*.34:0,lift2=walking?Math.max(0,Math.sin(t+Math.PI))*.09:0;
+  const sitting=acting&&actor.activity==='sofa';
+  const bob=walking?Math.abs(Math.sin(t))*.008:acting?Math.sin(phase*6*Math.PI)*.006:0;
+  const hipZ=(sitting?.68:.91)+bob,torsoY=walking?-.018:0;
+  // Foot, knee and hip positions animate independently; joints are smooth volumes.
+  for(const [side,index,legSwing,legLift] of [[-1,0,swing,lift],[1,1,step2,lift2]]){
+    const x=side*.118;
+    const hip=[x,torsoY,hipZ-.04];
+    const knee=sitting?[x,-.32,.52+bob]:[x,legSwing*.43,.54+bob-legLift*.25];
+    const ankle=sitting?[x,-.47,.15]:[x,-legSwing*.46,.145+legLift];
+    bone(mesh,hip,knee,.104,.085,PANTS_LITE,10);
+    ellipsoid(mesh,...knee,.088,.087,.09,PANTS,7,10);
+    bone(mesh,knee,ankle,.080,.062,PANTS,10);
+    ellipsoid(mesh,ankle[0],ankle[1]-.085,ankle[2]-.073,.105,.19,.075,SHOES,7,12);
+    ellipsoid(mesh,ankle[0],ankle[1]-.105,ankle[2]-.122,.110,.190,.027,SOLES,5,10);
+    // Sneaker laces, not faceted rectangular footwear.
+    bone(mesh,[x-.045,ankle[1]-.105,ankle[2]-.008],[x+.045,ankle[1]-.105,ankle[2]-.008],.007,.007,STEEL,6);
   }
-  const waist=seated?.68:.81;
-  humanCube(m,-.235,-.135,waist,.47,.27,.59,hoodie);
-  humanCube(m,-.20,-.151,waist+.04,.40,.028,.13,sleeves);
-  humanCube(m,-.105,-.164,waist+.35,.21,.02,.035,seams);
-  humanCube(m,-.058,-.143,waist+.02,.116,.025,.14,sleeves);
-  humanCylinder(m,0,0,waist+.58,.115,.12,skin,14);
-  const armSwing=walk?step*.80:0;
-  for(const [i,x] of [[0,-.31],[1,.235]]){
-    const moving=i===0?armSwing:-armSwing;
-    const reach=doing&&['fridge','stove','sink','desk'].includes(actor.activity)&&i===1;
-    const handY=reach?-.43:moving-.09;
-    humanCube(m,x,handY,waist+(reach?.34:.13),.105,reach?.43:.20,reach?.16:.38,i===0?sleeves:hoodie);
-    humanEllipsoid(m,x+.052,reach?-.43:moving-.04,waist+(reach?.39:.11),.055,.055,.072,skin,6,10);
+  ellipsoid(mesh,0,torsoY,hipZ-.01,.21,.135,.15,PANTS,7,12);
+  torso(mesh,hipZ,torsoY);
+  ellipsoid(mesh,0,torsoY,hipZ+.49,.105,.09,.105,SKIN,7,11);
+  // Jacket shoulders and articulated arms: elbows do not remain rigid when walking.
+  for(const side of [-1,1]){
+    const shoulder=[side*.247,torsoY,hipZ+.425];
+    const sw=side===-1?swing:step2;
+    const actionReach=acting&&['fridge','stove','sink','desk'].includes(actor.activity);
+    const reach=actionReach&&(actor.activity!=='fridge'||side===1);
+    const pulse=reach?Math.sin(phase*5*Math.PI)*.025:0;
+    const elbow=reach?[side*.305,-.20,hipZ+.225+pulse]:
+      sitting?[side*.31,-.16,hipZ+.17]:[side*.31,-.04+sw*.23,hipZ+.21];
+    const hand=reach?[side*.20,-.44,hipZ+.31+pulse]:
+      sitting?[side*.18,-.40,hipZ+.04]:[side*.285,-.045+sw*.46,hipZ+.07];
+    ellipsoid(mesh,...shoulder,.113,.115,.115,COAT,7,10);
+    bone(mesh,shoulder,elbow,.087,.074,COAT_DARK,10);
+    ellipsoid(mesh,...elbow,.075,.075,.073,COAT_LITE,7,10);
+    bone(mesh,elbow,hand,.070,.052,COAT,10);
+    ellipsoid(mesh,...hand,.057,.055,.073,SKIN,7,10);
   }
-  const headZ=waist+.805;
-  humanEllipsoid(m,0,0,headZ,.152,.136,.174,skin,10,14);
-  // Side-swept hair, crown, distinct eyes and nose; readable in close 3D.
-  humanEllipsoid(m,0,.027,headZ+.09,.160,.144,.095,hair,7,14);
-  humanCube(m,-.16,-.138,headZ+.065,.315,.085,.055,hair);
-  humanEllipsoid(m,-.069,-.126,headZ+.008,.014,.012,.020,humanRGB('#24323d'),5,8);
-  humanEllipsoid(m,.068,-.126,headZ+.008,.014,.012,.020,humanRGB('#24323d'),5,8);
-  humanEllipsoid(m,0,-.139,headZ-.048,.022,.021,.027,skin,5,8);
-  humanCube(m,-.045,-.145,headZ-.093,.09,.012,.012,humanRGB('#a97472'));
-  // hoodie hood ring and shoelace details make scale figure less boxy
-  humanCylinder(m,0,.083,waist+.53,.155,.085,sleeves,12);
-  // Height is exactly 1.80 m when standing (uppermost hair/head = 1.80 approx).
-  const cs=Math.cos(actor.facing),sn=Math.sin(actor.facing),base=actor.floor*STORY_HEIGHT+SLAB_THICKNESS+.023;
-  for(let i=0;i<m.vertex.length;i+=3){
-    const x=m.vertex[i],y=m.vertex[i+1];m.vertex[i]=actor.x+x*cs-y*sn;m.vertex[i+1]=actor.y+x*sn+y*cs;m.vertex[i+2]+=base;
-    const nx=m.normal[i],ny=m.normal[i+1];m.normal[i]=nx*cs-ny*sn;m.normal[i+1]=nx*sn+ny*cs;
+  const neckZ=hipZ+.54;
+  bone(mesh,[0,torsoY,neckZ],[0,torsoY,neckZ+.08],.076,.070,SKIN,12);
+  const headZ=hipZ+.70;
+  ellipsoid(mesh,0,torsoY-.012,headZ,.139,.13,.171,SKIN,10,16);
+  ellipsoid(mesh,-.139,torsoY,headZ-.018,.035,.030,.056,SKIN_SHADOW,6,10);
+  ellipsoid(mesh,.139,torsoY,headZ-.018,.035,.030,.056,SKIN_SHADOW,6,10);
+  // Hair cap and swept fringe. Total standing height ≈1.80 m.
+  ellipsoid(mesh,0,torsoY+.025,headZ+.097,.151,.140,.084,HAIR,8,16);
+  ellipsoid(mesh,-.072,torsoY-.09,headZ+.108,.095,.074,.048,HAIR_LITE,6,10);
+  ellipsoid(mesh,.083,torsoY+.025,headZ+.053,.075,.136,.092,HAIR,6,12);
+  for(const side of [-1,1]){
+    ellipsoid(mesh,side*.055,torsoY-.127,headZ+.007,.014,.012,.019,EYE,6,9);
+    bone(mesh,[side*.038,torsoY-.142,headZ+.048],[side*.076,torsoY-.136,headZ+.044],.005,.005,HAIR,6);
   }
-  if(doing&&actor.activity==='fridge'&&goal?.furniture){
-    const f=goal.furniture,z=f.floor*STORY_HEIGHT+SLAB_THICKNESS+.02;
-    const open=Math.min(1,actor.activityProgress*3, (1-actor.activityProgress)*3);
-    humanCube(m,f.x+f.w-.04,f.y+f.d,z+.08,.055,.15+.48*open,Math.max(.7,f.h-.15),humanRGB('#e9eff0'));
-    humanCube(m,f.x+f.w-.05,f.y+f.d+.12,z+.83,.028,.03,.27,humanRGB('#8596a0'));
+  ellipsoid(mesh,0,torsoY-.143,headZ-.046,.022,.024,.031,SKIN_SHADOW,6,10);
+  bone(mesh,[-.033,torsoY-.137,headZ-.093],[.033,torsoY-.137,headZ-.093],.005,.005,RGB('#986e67'),6);
+  const facing=actor.facing+(sitting?Math.PI:0),c=Math.cos(facing),s=Math.sin(facing);
+  const base=actor.floor*STORY_HEIGHT+SLAB_THICKNESS+.028;
+  let poseX=actor.x,poseY=actor.y;
+  if(sitting&&goal?.furniture){
+    const f=goal.furniture,dx=f.x+f.w/2-poseX,dy=f.y+f.d/2-poseY,len=Math.hypot(dx,dy);
+    // A short sitting offset puts the hips over the actual sofa seat.
+    if(len>.001){const distance=Math.min(.36,len);poseX+=dx/len*distance;poseY+=dy/len*distance;}
   }
-  return m;
+  for(let i=0;i<mesh.vertex.length;i+=3){
+    const x=mesh.vertex[i],y=mesh.vertex[i+1];
+    mesh.vertex[i]=poseX+x*c-y*s;
+    mesh.vertex[i+1]=poseY+x*s+y*c;
+    mesh.vertex[i+2]+=base;
+    const nx=mesh.normal[i],ny=mesh.normal[i+1];
+    mesh.normal[i]=nx*c-ny*s;mesh.normal[i+1]=nx*s+ny*c;
+  }
+  // The fridge door opens around its real hinge in WORLD coordinates.
+  // Do this AFTER transforming the human; otherwise the door floats in space.
+  if(acting&&actor.activity==='fridge'&&goal?.furniture){
+    const f=goal.furniture,z=f.floor*STORY_HEIGHT+SLAB_THICKNESS+.075;
+    const opening=Math.sin(phase*Math.PI)*.95,width=Math.max(.22,f.w-.045);
+    const x=f.x+.022,y=f.y+f.d+.013,xx=x+width*Math.cos(opening),yy=y+width*Math.sin(opening),top=z+Math.min(1.65,f.h-.12);
+    const q0=[x,y,z],q1=[xx,yy,z],q2=[xx,yy,top],q3=[x,y,top],n=[Math.sin(opening),-Math.cos(opening),0];
+    tri(mesh,q0,q1,q2,n,WHITE);tri(mesh,q0,q2,q3,n,WHITE);
+    const back=n.map(v=>-v);tri(mesh,q2,q1,q0,back,STEEL);tri(mesh,q3,q2,q0,back,STEEL);
+    bone(mesh,[xx-.022*Math.cos(opening),yy-.022*Math.sin(opening),z+.78],
+      [xx-.022*Math.cos(opening),yy-.022*Math.sin(opening),z+1.10],.015,.015,STEEL,8);
+  }
+  return mesh;
 }
-
-exports.createHumanDirector = createHumanDirector;
-exports.makeHumanMesh = makeHumanMesh;
+exports.createHumanDirector=createHumanDirector;
+exports.makeHumanMesh=makeHumanMesh;
+// Exposed for isolated regression tests, no UI dependency.
+exports._navigation={graphOf,roomRoute,pathInside,nearestWalkable};
 };
 
 __modules['src/freecad.js']=function(exports,__require){
 const {getSolids} = __require('src/geometry.js');
+const {detailedSolids} = __require('src/freecadNative.js');
 /**
  * Direct 3D mesh exports for FreeCAD (File > Open), WITHOUT a macro.
  * Geometry uses millimetres and X/Y horizontal, Z vertical.
@@ -1823,68 +2055,62 @@ function createSTLBlob(project){
 }
 
 function createFreeCADMacro(project) {
-  // Every wall piece, glass piece and room slab is an independently editable Part::Box.
-  // FreeCAD is required to run this macro and save the resulting native .FCStd file.
-  const data={projectName:project.name,rooms:project.rooms,settings:project.settings,solids:getSolids(project)};
+  // True FCStd files can only be safely authored by FreeCAD itself.
+  // When the user runs this macro in FreeCAD, it creates a real document
+  // with editable boxes, groups, colors, and saves it into the home folder.
+  const solids=detailedSolids(project).filter(s=>[s.x,s.y,s.z,s.w,s.d,s.h].every(Number.isFinite)&&s.w>0&&s.d>0&&s.h>0);
+  const data={projectName:project.name,solids};
   const encoded=JSON.stringify(JSON.stringify(data));
   return `# -*- coding: utf-8 -*-
-# ARCHITECT STUDIO — exported FreeCAD macro (.FCMacro)
-# Educational conceptual model — NOT a construction-ready structural design.
-# Units: project metres are converted to millimetres here.
-# Run from FreeCAD: Macro > Macros > choose this file > Execute.
-# Then File > Save As > FreeCAD (*.FCStd).
+# FORMA Studio | FreeCAD 1.0.1 on RED OS
+# Execute in FreeCAD: Macro > Macros > select file > Execute.
+# Creates a real, native FCStd in your HOME directory automatically.
+# Educational model only. Engineering calculations are not certified.
+import os
 import json
 import FreeCAD as App
 import FreeCADGui as Gui
-import Part
 
 payload = json.loads(${encoded})
-name = 'ArchitectStudio'
-doc = App.newDocument(name)
-
-def mm(value):
-    return float(value) * 1000.0
-
-colors = {
-    'wall': (0.81, 0.84, 0.82),
-    'slab': (0.82, 0.72, 0.62),
-    'foundation': (0.45, 0.52, 0.54),
-    'glass': (0.45, 0.76, 0.84)
-}
-
+model = App.newDocument('FORMA_Studio')
 groups = {}
-for floor in (0, 1):
-    group = doc.addObject('App::DocumentObjectGroup', 'Storey' + str(floor+1))
-    group.Label = u'Этаж ' + str(floor+1)
-    groups[floor] = group
 
-for i, item in enumerate(payload['solids']):
-    box = doc.addObject('Part::Box', 'Part' + str(i+1).zfill(4))
-    box.Label = item.get('name', item['kind']) + ' ' + str(i+1)
-    box.Length = mm(item['w'])
-    box.Width = mm(item['d'])
-    box.Height = mm(item['h'])
-    box.Placement.Base = App.Vector(mm(item['x']), mm(item['y']), mm(item['z']))
-    box.addProperty('App::PropertyString', 'Category', 'ArchitectStudio')
-    box.Category = item['kind']
-    box.addProperty('App::PropertyInteger', 'FloorNumber', 'ArchitectStudio')
-    box.FloorNumber = int(item['floor']) + 1
-    groups[int(item['floor'])].addObject(box)
-    box.ViewObject.ShapeColor = colors.get(item['kind'], (0.8, 0.8, 0.8))
-    if item['kind'] == 'glass':
-        box.ViewObject.Transparency = 35
+def mm(v):
+    return float(v) * 1000.0
 
-info = doc.addObject('App::DocumentObjectGroup', 'ProjectInfo')
-info.Label = u'Сведения о проекте'
-info.addProperty('App::PropertyString', 'ProjectTitle', 'Information')
-info.ProjectTitle = payload['projectName']
-info.addProperty('App::PropertyString', 'Warning', 'Information')
-info.Warning = 'Educational geometry only; not validated for construction.'
+def rgb(color):
+    value = (color or '#cad2ce').lstrip('#')
+    try:
+        return tuple(int(value[i:i+2], 16) / 255.0 for i in (0, 2, 4))
+    except Exception:
+        return (0.8, 0.8, 0.8)
 
-doc.recompute()
+for idx, item in enumerate(payload['solids']):
+    group_name = item.get('group', 'Прочие элементы')
+    if group_name not in groups:
+        group = model.addObject('App::DocumentObjectGroup', 'Group%02d' % (len(groups) + 1))
+        group.Label = group_name
+        groups[group_name] = group
+    obj = model.addObject('Part::Box', 'Element%04d' % (idx + 1))
+    obj.Label = item.get('name') or (group_name + ' %d' % (idx + 1))
+    obj.Length = mm(item['w'])
+    obj.Width = mm(item['d'])
+    obj.Height = mm(item['h'])
+    q = item.get('rotation') or [0, 0, 0, 1]
+    rotation = App.Rotation(float(q[0]), float(q[1]), float(q[2]), float(q[3]))
+    obj.Placement = App.Placement(App.Vector(mm(item['x']), mm(item['y']), mm(item['z'])), rotation)
+    groups[group_name].addObject(obj)
+    obj.ViewObject.ShapeColor = rgb(item.get('color'))
+    if item.get('kind') == 'glass':
+        obj.ViewObject.Transparency = 45
+
+model.Label = payload.get('projectName') or 'FORMA Studio'
+model.recompute()
 Gui.activeDocument().activeView().viewAxonometric()
 Gui.activeDocument().activeView().fitAll()
-App.Console.PrintMessage('ArchitectStudio: created ' + str(len(payload['solids'])) + ' editable Part::Box objects. Save as .FCStd.\\n')
+filename = os.path.join(os.path.expanduser('~'), 'FORMA_Studio_export.FCStd')
+model.saveAs(filename)
+App.Console.PrintMessage('FORMA Studio: saved native FCStd: ' + filename + '\\n')
 `;
 }
 
@@ -2406,7 +2632,11 @@ function mount3D(canvas,getProject){
     setHuman(enabled){director.actor.enabled=enabled;
       const status=document.getElementById('humanStatus');if(status)status.textContent=enabled?director.caption():'Скрыт';
       draw(window.__floor||0)},
-    nextHumanAction(){director.next(getProject());draw(window.__floor||0)}
+    nextHumanAction(){director.next(getProject());draw(window.__floor||0)},
+    goHumanToRoom(id){const ok=director.selectRoom(getProject(),id);
+      const status=document.getElementById('humanStatus');if(status)status.textContent=director.caption();
+      draw(window.__floor||0);return ok;},
+    setHumanFloor(f){director.moveToFloor(getProject(),f);draw(window.__floor||0)}
   };
 }
 
@@ -2432,7 +2662,7 @@ function getRecommendations(project, report){
     add('⌁','Отступы и мебель','Не прокладывай учебные схемы контуров под встроенными кухонными шкафами и крупными неподвижными приборами; у наружных стен возможна более плотная укладка после расчёта.','heat');
   } else if(project.rooms.length) add('♨','Добавь тёплый пол','Нажми «Тёплый пол» слева и включи отопление — появятся расчёты ориентировочных контуров по комнатам.','heat');
   if(floorRooms(project,1).length===0&&floorRooms(project,0).length) add('▱','Готов ко второму этажу','Переключись на «Этаж 2» и добавь помещения. Выступающие за первый этаж участки будут подсвечены в проверках.');
-  if(project.rooms.length) add('↗','Передача в FreeCAD','Кнопка FreeCAD .FCStd скачивает нативный проект с редактируемыми стенами, перекрытиями, дверьми, окнами и крышей.');
+  if(project.rooms.length) add('↗','Передача в FreeCAD','Кнопка FreeCAD скачивает STEP, который открывается на РЕД ОС. После открытия сохрани модель как .FCStd внутри FreeCAD.');
   if(report.metrics.criticalCount) add('!','Есть критические предупреждения',`Обнаружено ${report.metrics.criticalCount}. Исправь выделенные несоответствия перед показом расчётов.`,'warning');
   return tips.slice(0,6);
 }
@@ -2506,7 +2736,7 @@ function furnish(room, fallbackStyle='modern') {
       add('pillow',bx+bedW*.55,by+.12,Math.max(.25,bedW*.31),.34,.49,'light');
       add('side',bx-.54,by+.18,.43,.45,.49,'wood');
       if(w>3.3)add('side',bx+bedW+.12,by+.18,.43,.45,.49,'wood');
-      add('wardrobe',w-Math.min(1.8,w*.4)-.25,h-.82,Math.min(1.8,w*.4),.58,2.05,'wood','Шкаф');
+      if(Math.min(w,h)>=3.35)add('wardrobe',w-Math.min(1.8,w*.4)-.25,h-.82,Math.min(1.8,w*.4),.58,2.05,'wood','Шкаф');
       if(big){add('desk',.32,h*.63,1.55,.7,.75,'wood','Туалетный столик');add('chair',.9,h*.63+.8,.44,.45,.48,'soft');add('armchair',w*.7,h*.55,.86,.9,.74,'soft')}
       break;
     }
@@ -2546,11 +2776,59 @@ function furnish(room, fallbackStyle='modern') {
   }
   return items;
 }
-function getFurniture(project) {
-  const selected=project.settings?.interiorStyle||'modern';
-  return project.rooms.flatMap(r=>furnish(r,selected));
+function doorClearance(room,project){
+  const zones=[];
+  for(const o of project.openings||[]){
+    if(o.kind!=='door'||o.floor!==room.floor)continue;
+    const width=1.22,depth=1.10;
+    if(o.dir==='v'&&(Math.abs(o.x-room.x)<.04||Math.abs(o.x-(room.x+room.w))<.04)&&o.y>room.y&&o.y<room.y+room.h){
+      const x=Math.abs(o.x-room.x)<.04?room.x:room.x+room.w-depth;
+      zones.push({x,y:o.y-width/2,w:depth,d:width});
+    }
+    if(o.dir==='h'&&(Math.abs(o.y-room.y)<.04||Math.abs(o.y-(room.y+room.h))<.04)&&o.x>room.x&&o.x<room.x+room.w){
+      const y=Math.abs(o.y-room.y)<.04?room.y:room.y+room.h-depth;
+      zones.push({x:o.x-width/2,y,w:width,d:depth});
+    }
+  }
+  return zones;
 }
-function roomFurniture(room, project){return furnish(room,project.settings?.interiorStyle||'modern')}
+function overlaps(a,b,extra=.0){
+  return a.x < b.x+b.w+extra && a.x+a.w>b.x-extra && a.y<b.y+b.d+extra&&a.y+a.d>b.y-extra;
+}
+function furnishForProject(room,project){
+  const items=furnish(room,project.settings?.interiorStyle||'modern'),zones=doorClearance(room,project);
+  if(!zones.length)return items;
+  const output=[];
+  const free=item=>!zones.some(z=>overlaps(item,z,.04))&&
+    item.x>=room.x+.08&&item.y>=room.y+.08&&
+    item.x+item.w<=room.x+room.w-.07&&item.y+item.d<=room.y+room.h-.07;
+  for(const f of items){
+    if(['rug','plant'].includes(f.kind)||free(f)){output.push(f);continue;}
+    // A relocated narrow corner counter can seal the only aisle into the kitchen.
+    // Skip that optional section rather than blocking the fridge and stove.
+    if(f.kind==='counter'&&f.w<.9&&f.d>1.0)continue;
+    // Search for the nearest alternative location. This keeps a newly inserted
+    // doorway clear instead of making the agent walk through a cabinet.
+    let candidate=null,best=Infinity;
+    for(let y=room.y+.12;y+f.d<=room.y+room.h-.08;y+=.25){
+      for(let x=room.x+.12;x+f.w<=room.x+room.w-.08;x+=.25){
+        const moved={...f,x:Math.round(x*100)/100,y:Math.round(y*100)/100};
+        if(!free(moved))continue;
+        const d=(x-f.x)**2+(y-f.y)**2;
+        // Avoid relocating into other major pieces; small countertop details
+        // may intentionally overlap their own counter surfaces.
+        if(output.some(other=>!['rug','pillow','sink','stove'].includes(other.kind)&&
+            !['pillow','sink','stove'].includes(f.kind)&&overlaps(other,moved,.04)))continue;
+        if(d<best){best=d;candidate=moved;}
+      }
+    }
+    if(candidate)output.push(candidate);
+    // If no valid space exists, omit that decoration rather than block the door.
+  }
+  return output;
+}
+function getFurniture(project){return project.rooms.flatMap(r=>furnishForProject(r,project));}
+function roomFurniture(room,project){return furnishForProject(room,project);}
 
 exports.interiorStyles = interiorStyles;
 exports.getFurniture = getFurniture;
